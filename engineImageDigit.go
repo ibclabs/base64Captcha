@@ -24,7 +24,7 @@ import (
 	"math"
 )
 
-//ConfigDigit config for captcha-engine-digit.
+// ConfigDigit config for captcha-engine-digit.
 type ConfigDigit struct {
 
 	// Height png height in pixel.
@@ -42,6 +42,8 @@ type ConfigDigit struct {
 	// DotCount Number of background circles.
 	// 图像验证码干扰圆点的数量.
 	DotCount int
+	// StrikeCount Number of strike through lines
+	StrikeCount int
 }
 
 // CaptchaImageDigit digits captcha Struct
@@ -52,9 +54,13 @@ type CaptchaImageDigit struct {
 	rng     siprng
 }
 
-//EngineDigitsCreate create captcha by engine-digits with configuration.
+// EngineDigitsCreate create captcha by engine-digits with configuration.
 func EngineDigitsCreate(id string, config ConfigDigit) *CaptchaImageDigit {
 	digits := randomDigits(config.CaptchaLen)
+	return newDigits(id, digits, config)
+}
+
+func newDigits(id string, digits []byte, config ConfigDigit) *CaptchaImageDigit {
 	// Initialize PRNG.
 	m := new(CaptchaImageDigit)
 	//parse digits to string
@@ -81,7 +87,9 @@ func EngineDigitsCreate(id string, config ConfigDigit) *CaptchaImageDigit {
 		x += m.ImageWidth + m.dotSize
 	}
 	// Draw strike-through line.
-	m.strikeThrough()
+	for i := 0; i < config.StrikeCount; i++ {
+		m.strikeThrough()
+	}
 	// Apply wave distortion.
 	m.distort(m.rng.Float(5, 10), m.rng.Float(100, 200))
 	// Fill image with random circles.

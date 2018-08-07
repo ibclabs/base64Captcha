@@ -12,7 +12,7 @@ import (
 	"math"
 )
 
-//ConfigAudio captcha config for captcha-engine-audio.
+// ConfigAudio captcha config for captcha-engine-audio.
 type ConfigAudio struct {
 	// CaptchaLen Default number of digits in captcha solution.
 	CaptchaLen int
@@ -28,7 +28,7 @@ func init() {
 	endingBeepSound = changeSpeed(beepSound, 1.4)
 }
 
-//Audio captcha-audio-engine return type.
+// Audio captcha-audio-engine return type.
 type Audio struct {
 	CaptchaItem
 	body        *bytes.Buffer
@@ -36,12 +36,10 @@ type Audio struct {
 	rng         siprng
 }
 
-//EngineAudioCreate create captcha with configAudio.
+// EngineAudioCreate create captcha with configAudio.
 func EngineAudioCreate(id string, config ConfigAudio) *Audio {
 	digits := randomDigits(config.CaptchaLen)
-	audio := newAudio(id, digits, config.Language)
-	audio.VerifyValue = parseDigitsToString(digits)
-	return audio
+	return newAudio(id, digits, config)
 }
 
 // newAudio returns a new audio captcha with the given digits, where each digit
@@ -49,13 +47,14 @@ func EngineAudioCreate(id string, config ConfigAudio) *Audio {
 // are no sounds for the given language, English is used.
 //
 // Possible values for lang are "en", "ja", "ru", "zh".
-func newAudio(id string, digits []byte, lang string) *Audio {
+func newAudio(id string, digits []byte, config ConfigAudio) *Audio {
 	a := new(Audio)
+	a.VerifyValue = parseDigitsToString(digits)
 
 	// Initialize PRNG.
 	a.rng.Seed(deriveSeed(audioSeedPurpose, id, digits))
 
-	if sounds, ok := digitSounds[lang]; ok {
+	if sounds, ok := digitSounds[config.Language]; ok {
 		a.digitSounds = sounds
 	} else {
 		a.digitSounds = digitSounds["en"]
